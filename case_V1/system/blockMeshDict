@@ -1,0 +1,124 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  7  
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      blockMeshDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+convertToMeters 1; // As per used :-does nothing in this case, x.xx would shrink it by yy. x times
+
+/*
+vertices   // (x y z)   
+(
+    (-0.08 -0.05 -0.05)       // p0
+    (00.08 -0.05 -0.05)       // p1
+    (00.08 0.050 -0.05)       // p2
+    (-0.08 0.050 -0.05)       // p3
+    (-0.08 -0.05 0.190)       // p4
+    (00.08 -0.05 0.190)       // p5
+    (00.08 0.050 0.190)       // p6
+    (-0.08 0.050 0.190)       // p7
+);
+
+blocks          
+(
+    hex (0 1 2 3 4 5 6 7) (115 40 70) simpleGrading (1 1 1)
+    //hex (0 1 2 3 4 5 6 7) (40 115 70) simpleGrading (1 1 1)
+);
+
+*/
+
+a 100;   // simpleGrading IN X
+b 75;    // simpleGrading IN Y
+c 150;    // simpleGrading IN Z
+
+yi -0.05;  // Y min.
+yf 0.05;    // Y max.
+zi -0.05;    // Z min.
+zf 0.230;    // Z mAX.
+xi -0.08;    // X min.
+xf 0.08;    // X mAX.
+
+vertices   // (x y z)   
+(
+    ($xi $yi $zi) //p0
+    ($xf $yi $zi) //p1
+    ($xf $yf $zi) //p2
+    ($xi $yf $zi) //p3
+    ($xi $yi $zf) //p4
+    ($xf $yi $zf) //p5
+    ($xf $yf $zf) //p6
+    ($xi $yf $zf) //p7
+);
+
+
+blocks
+(
+    hex (0 1 2 3 4 5 6 7) ($a $b $c) simpleGrading (1 1 1)
+)
+
+
+/*
+patches         // it can we modified as per user 
+(               
+    patch maxY 
+    (
+        (3 7 6 2)
+    )
+    patch minX
+    (
+        (0 4 7 3)
+    )
+    patch maxX
+    (
+        (2 6 5 1)
+    )
+    patch minY
+    (
+        (1 5 4 0)
+    )
+    patch minZ
+    (
+        (0 3 2 1)
+    )
+    patch maxZ
+    (
+        (4 5 6 7)
+    )
+);
+
+*/
+
+
+edges
+(
+);
+
+faces
+(
+);
+
+defaultPatch
+{
+    name default;
+    type patch;
+}
+
+boundary
+(
+);
+
+mergePatchPairs
+(
+);
+
+// ************************************************************************* //
