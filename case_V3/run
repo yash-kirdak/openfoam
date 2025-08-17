@@ -1,0 +1,151 @@
+#!/bin/bash
+#
+#-------------------------------------------------#
+# Contributor: Dr. Raj Kumar Saini                #
+# Last Change: Jan 10    2020                        #
+#-------------------------------------------------#
+# Topic:       Present case study                 #
+# OpenFOAM:    7                                  #
+#-------------------------------------------------#
+# Location:    www.xxxx                           #
+# Email:       raj.km.saini@gmail.com             #
+#-------------------------------------------------#
+
+
+#------------------------------------------------------------------------------
+foamVersion="OpenFOAM-7"
+#------------------------------------------------------------------------------
+cd ${0%/*} || exit 1
+
+# Color definition for some bash highlight manipulation
+#------------------------------------------------------------------------------
+RED='\e[0;31m'
+GREEN='\e[0;32m'
+NC='\e[0m'
+ORANGE='\033[0;33m'
+GRAY='\e[0;37m'
+FL='\033[0;36m'
+#------------------------------------------------------------------------------
+
+#------------------------------------------------------------------------------
+# Preamble with the information about the tutorial
+echo -en "
+-------------------------------------------------------------------------------
+${RED}Work done by Dr. Raj Kumar Saini${NC} :: Generated during Jan 2020     
+${RED}Build for OpenFOAM version${NC}  :: OpenFOAM-7
+${RED}Tested on system${NC}            :: Ubuntu 18.04 LTS
+-------------------------------------------------------------------------------
+${GREEN}Topic: Present case study ${NC}
+-------------------------------------------------------------------------------
+"
+#------------------------------------------------------------------------------
+# Check the OpenFOAM version
+echo -e "   - Check OpenFOAM version. We need $foamVersion"
+userFoamVersion=`echo "$WM_PROJECT-$WM_PROJECT_VERSION"` 
+
+if [ "$userFoamVersion" == "$foamVersion" ]
+then
+    echo -e  "   - ${GREEN}$foamVersion found...${NC}"
+
+else
+    echo -e  "   - ${RED}You are not using the correct OpenFOAM version"
+    echo -en "     Your version is $userFoamVersion and we need ${GREEN}"
+    echo -e  "$foamVersion${NC}\n"
+
+    while true
+    do
+        echo -en  "   - Proceed with your OpenFOAM version (y/n): "
+        read proceed
+
+        if [ "$proceed" == "y" ]
+        then
+            break
+
+        elif [ "$proceed" == "n" ]
+        then
+            echo -e "\n\n"
+            exit
+        fi
+    done
+fi
+
+
+#------------------------------------------------------------------------------
+echo -e "\n 
+Start meshing -------------------"
+#------------------------------------------------------------------------------
+echo -e "-----Create mesh: background mesh with blockMesh"
+blockMesh > logBlockMesh
+
+
+#------------------------------------------------------------------------------
+echo -e "-----Runs mesher  by snappyHexMesh"
+snappyHexMesh -overwrite > logSnappyHexMesh
+
+
+
+#------------------------------------------------------------------------------
+echo -e "-----Convert the face zones into mapped wall baffles and split"
+createBaffles -overwrite> logCreateBaffles
+
+mergeOrSplitBaffles -split -overwrite > logMergeOrSplitBaffles
+
+#rm -rf processor*/constant/polyMesh/pointLevel
+
+
+#------------------------------------------------------------------------------
+echo -e "-----Split the mesh into regions"
+splitMeshRegions -cellZones -defaultRegionName solid -overwrite > logSplitMeshRegions
+
+
+#------------------------------------------------------------------------------
+echo -e "------CheckMesh "
+checkMesh > logCheckMesh
+
+#------------------------------------------------------------------------------
+echo -e "------End Meshing \n"
+#------------------------------------------------------------
+
+
+#------------------------------------------------------------------------------
+#echo -e "------change the bC patches by changeDictionaryDict "
+#changeDictionary > logChangeDictionary
+
+
+#------------------------------------------------------------------------------
+#echo -e "------Copy 0.org to new 0 directory  and Prepare case"
+#rm -r 0
+#cp -r 0.orig/* 0
+
+
+
+#------------------------------------------------------------------------------
+echo -e "Start simulation"
+#------------------------------------------------------------------------------
+if [ `which chtMultiRegionFoam` ]
+then
+
+
+    echo -e "------Start transient/steady calculation (simulation take several mins/hrs for video result)"
+    chtMultiRegionFoam > logChtMultiRegionFoam
+    #--------------------------------------------------------------------------
+else
+    #--------------------------------------------------------------------------
+    echo -en "----Simulation will not start,"
+    echo -en "----'${RED}chtMultiRegionFoam$NC'"
+    echo -e "-----not available"
+    #--------------------------------------------------------------------------
+fi
+#------------------------------------------------------------------------------
+echo -e "-----End\n\n"
+#------------------------------------------------------------------------------
+
+
+#------------------------------------------------------------------------------
+echo -e "-----Genrate (case name).OPENFOAM file for paraview \n\n"
+ 
+paraFoam -touchAll
+#------------------------------------------------------------------------------
+
+
+

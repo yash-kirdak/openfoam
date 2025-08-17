@@ -1,0 +1,28 @@
+#!/bin/bash
+#-------------------------------------------------------------------------------
+cd ${0%/*} || exit 1    # Run from this directory
+clear
+
+
+#-------------------------------------------------------------------------------
+foamCleanTutorials    # Case/Tutorial clean functions
+rm -rf log*
+#rm constant/polyMesh/boundary > /dev/null 2>&1
+#rm -rf constant/extendedFeatureEdgeMesh > /dev/null 2>&1
+#rm -f constant/triSurface/*.eMesh* > /dev/null 2>&1
+
+
+
+#
+
+rm -f 0/cellToRegion
+
+for region in shell tube solid
+do
+    rm -rf 0/${region}/cellToRegion constant/${region}/polyMesh
+done
+
+#
+
+rm -rf processor* 2>/dev/null
+#-------------------------------------------------------------------------------
